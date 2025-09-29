@@ -6,9 +6,9 @@ export default function About() {
       <img
         className="about-avatar"
         src="/photo.jpeg"
-        alt="Your Full Name portrait"
+        alt="Islam Mubarak portrait"
       />
-      <h1 style={{ marginTop: '0' }}>Your Full Name</h1>
+      <h1 style={{ marginTop: '0' }}>Islam Mubarak</h1>
       <p>
         I’m a self‑taught game developer and a web developer with 4 years of professional experience,
         holding a B.S. in Computer Science from Helwan University.
