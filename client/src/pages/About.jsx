@@ -14,7 +14,7 @@ export default function About() {
         holding a B.S. in Computer Science from Helwan University.
       </p>
       <div className="hero-cta" style={{ justifyContent: 'center', marginBottom: '0.5rem' }}>
-        <a className="btn" href="/Resume.pdf" download="Resume.pdf">Download Resume</a>
+        <a className="btn" href="/Resume.pdf" target="_blank" rel="noopener noreferrer">Open Resume</a>
       </div>
       <h2>Skills</h2>
       <ul className="pill-list">
