@@ -21,7 +21,11 @@ const create = async (req, res) => {
     const saved = await doc.save();
     return res.status(201).json(saved);
   } catch (err) {
-    return res.status(400).json({ error: err?.message || "Failed to create project" });
+    // Duplicate key error (formatted via helper)
+    if (err && (err.code === 11000 || err.code === 11001)) {
+      return res.status(409).json({ error: errorHandler.getErrorMessage(err) });
+    }
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
 
@@ -61,7 +65,10 @@ const update = async (req, res) => {
     const saved = await req.project.save();
     return res.json(saved);
   } catch (err) {
-    return res.status(400).json({ error: err?.message || "Failed to update project" });
+    if (err && (err.code === 11000 || err.code === 11001)) {
+      return res.status(409).json({ error: errorHandler.getErrorMessage(err) });
+    }
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
 

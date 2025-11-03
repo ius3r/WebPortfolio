@@ -1,4 +1,5 @@
 import Education from "../models/education.model.js";
+import errorHandler from "./error.controller.js";
 
 const requireFields = (data) => {
   if (!data.title || typeof data.title !== "string") return "Title is required";
@@ -21,7 +22,10 @@ const create = async (req, res) => {
     const saved = await doc.save();
     return res.status(201).json(saved);
   } catch (err) {
-    return res.status(400).json({ error: err?.message || "Failed to create qualification" });
+    if (err && (err.code === 11000 || err.code === 11001)) {
+      return res.status(409).json({ error: errorHandler.getErrorMessage(err) });
+    }
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
 
@@ -30,7 +34,7 @@ const list = async (_req, res) => {
     const docs = await Education.find();
     return res.json(docs);
   } catch (err) {
-    return res.status(400).json({ error: err?.message || "Failed to fetch qualifications" });
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
 
@@ -40,8 +44,8 @@ const educationByID = async (req, res, next, id) => {
     if (!doc) return res.status(404).json({ error: "Qualification not found" });
     req.education = doc;
     return next();
-  } catch (_err) {
-    return res.status(400).json({ error: "Invalid qualification id" });
+  } catch (err) {
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) || "Invalid qualification id" });
   }
 };
 
@@ -61,7 +65,10 @@ const update = async (req, res) => {
     const saved = await req.education.save();
     return res.json(saved);
   } catch (err) {
-    return res.status(400).json({ error: err?.message || "Failed to update qualification" });
+    if (err && (err.code === 11000 || err.code === 11001)) {
+      return res.status(409).json({ error: errorHandler.getErrorMessage(err) });
+    }
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
 
@@ -70,7 +77,7 @@ const remove = async (req, res) => {
     await req.education.deleteOne();
     return res.json({ message: "Qualification removed" });
   } catch (err) {
-    return res.status(400).json({ error: err?.message || "Failed to remove qualification" });
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
 
@@ -79,7 +86,7 @@ const removeAll = async (_req, res) => {
     const result = await Education.deleteMany({});
     return res.json({ message: "All qualifications removed", deletedCount: result.deletedCount });
   } catch (err) {
-    return res.status(400).json({ error: err?.message || "Failed to remove qualifications" });
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
 

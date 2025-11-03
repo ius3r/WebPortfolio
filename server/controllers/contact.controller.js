@@ -1,4 +1,5 @@
 import Contact from "../models/contact.model.js";
+import errorHandler from "./error.controller.js";
 
 // Simple validators
 const requireEmail = (data) => {
@@ -21,7 +22,7 @@ const create = async (req, res) => {
     const saved = await doc.save();
     return res.status(201).json(saved);
   } catch (err) {
-    return res.status(400).json({ error: err?.message || "Failed to create contact" });
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
 
@@ -30,7 +31,7 @@ const list = async (req, res) => {
     const docs = await Contact.find();
     return res.json(docs);
   } catch (err) {
-    return res.status(400).json({ error: err?.message || "Failed to fetch contacts" });
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
 
@@ -41,7 +42,7 @@ const contactByID = async (req, res, next, id) => {
     req.contact = doc;
     return next();
   } catch (err) {
-    return res.status(400).json({ error: "Invalid contact id" });
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) || "Invalid contact id" });
   }
 };
 
@@ -61,7 +62,7 @@ const update = async (req, res) => {
     const saved = await req.contact.save();
     return res.json(saved);
   } catch (err) {
-    return res.status(400).json({ error: err?.message || "Failed to update contact" });
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
 
@@ -70,7 +71,7 @@ const remove = async (req, res) => {
     await req.contact.deleteOne();
     return res.json({ message: "Contact removed" });
   } catch (err) {
-    return res.status(400).json({ error: err?.message || "Failed to remove contact" });
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
 
@@ -79,7 +80,7 @@ const removeAll = async (_req, res) => {
     const result = await Contact.deleteMany({});
     return res.json({ message: "All contacts removed", deletedCount: result.deletedCount });
   } catch (err) {
-    return res.status(400).json({ error: err?.message || "Failed to remove contacts" });
+    return res.status(400).json({ error: errorHandler.getErrorMessage(err) });
   }
 };
 
