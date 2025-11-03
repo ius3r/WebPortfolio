@@ -5,10 +5,10 @@ import config from "./../../config/config.js";
 const signin = async (req, res) => {
   try {
     let user = await User.findOne({ email: req.body.email });
-    if (!user) return res.status("401").json({ error: "User not found" });
+    if (!user) return res.status(401).json({ error: "User not found" });
     if (!user.authenticate(req.body.password)) {
       return res
-        .status("401")
+        .status(401)
         .send({ error: "Email and password don't match." });
     }
     const token = jwt.sign({ _id: user._id }, config.jwtSecret);
@@ -22,7 +22,7 @@ const signin = async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status("401").json({ error: "Could not sign in" });
+    return res.status(401).json({ error: "Could not sign in" });
   }
 };
 const signout = (req, res) => {
@@ -45,7 +45,7 @@ const requireSignin = expressjwt({
 const hasAuthorization = (req, res, next) => {
   const authorized = req.profile && req.auth && req.profile._id == req.auth._id;
   if (!authorized) {
-    return res.status("403").json({
+    return res.status(403).json({
       error: "User is not authorized",
     });
   }
