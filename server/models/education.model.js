@@ -1,12 +1,18 @@
 import mongoose from "mongoose";
 
 const EducationSchema = new mongoose.Schema({
-	title: { type: String, trim: true },
-	firstname: { type: String, trim: true },
-	lastname: { type: String, trim: true },
-	email: { type: String, trim: true },
+	title: { type: String, trim: true, required: 'Title is required' },
+	firstname: { type: String, trim: true, required: 'Firstname is required' },
+	lastname: { type: String, trim: true, required: 'Lastname is required'	 },
+	email: {
+		type: String,
+		trim: true,
+		unique: 'Email already exists',
+		match: [/.+\@.+\..+/, 'Please fill a valid email address'],
+		required: 'Email is required'
+	},
 	completion: { type: Date },
-	description: { type: String, trim: true },
+	description: { type: String, trim: true, required: 'Description is required' },
 });
 
 export default mongoose.model("Education", EducationSchema);
