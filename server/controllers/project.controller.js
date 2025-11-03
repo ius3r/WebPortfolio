@@ -1,5 +1,6 @@
 import Project from "../models/project.model.js";
 
+// Simple validators
 const requireFields = (data) => {
   if (!data.title || typeof data.title !== "string") return "Title is required";
   if (!data.email || typeof data.email !== "string" || !/.+@.+\..+/.test(data.email)) return "A valid email is required";

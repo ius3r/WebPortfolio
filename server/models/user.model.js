@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import crypto from "crypto";
+
+// Define the User schema
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -45,6 +47,8 @@ UserSchema.path("hashed_password").validate(function (v) {
     this.invalidate("password", "Password is required");
   }
 }, null);
+
+// Methods
 UserSchema.methods = {
   authenticate: function (plainText) {
     return this.encryptPassword(plainText) === this.hashed_password;

@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// Define the Education schema
 const ProjectSchema = new mongoose.Schema({
 	title: { type: String, trim: true, required: 'Title is required' },
 	firstname: { type: String, trim: true, required: 'Firstname is required' },

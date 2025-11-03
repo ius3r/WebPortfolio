@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// Define the Contact schema
 const ContactSchema = new mongoose.Schema({
 	firstname: { type: String, trim: true, required: 'First name is required' },
 	lastname: { type: String, trim: true, required: 'Last name is required' },
