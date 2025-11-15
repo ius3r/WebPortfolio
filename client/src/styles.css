@@ -30,6 +30,10 @@ body{
 .site-nav a:hover{ color:var(--text); background:#1a1f2b; }
 .site-nav a.active{ color:#fff; background:var(--primary); }
 
+/* Auth actions on right */
+.auth-actions{ margin-left:auto; display:flex; align-items:center; gap:.5rem; }
+.auth-name{ color:var(--muted); }
+
 /* Main */
 .hero{ padding:3.5rem 0; }
 .hero h1{ margin:0 0 .5rem; font-size:clamp(2rem,2.5vw + 1rem,3rem); }
@@ -76,4 +80,5 @@ input:focus,textarea:focus{ border-color:var(--primary); }
   .site-nav.open{ display:block; }
   .site-nav ul{ flex-direction:column; gap:.25rem; padding:.6rem 0; }
   .nav-wrap{ align-items:flex-start; }
+  .auth-actions{ width:100%; justify-content:flex-end; margin-top:.5rem; }
 }

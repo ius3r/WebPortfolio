@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export default function NavBar() {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
+  const { user, signout } = useAuth();
 
   const linkClass = ({ isActive }) => (isActive ? 'active' : undefined);
 
@@ -27,6 +29,19 @@ export default function NavBar() {
           <li><NavLink to="/contact" className={linkClass}>Contact Me</NavLink></li>
         </ul>
       </nav>
+      <div className="auth-actions">
+        {!user ? (
+          <>
+            <NavLink to="/login" className="btn small outline">Sign In</NavLink>
+            <NavLink to="/signup" className="btn small">Sign Up</NavLink>
+          </>
+        ) : (
+          <>
+            <span className="auth-name">{user.name}</span>
+            <button className="btn small outline" onClick={signout}>Sign Out</button>
+          </>
+        )}
+      </div>
     </>
   );
 }
