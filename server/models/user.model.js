@@ -28,6 +28,10 @@ const UserSchema = new mongoose.Schema({
     required: "Password is required",
   },
   salt: String,
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
 });
 UserSchema.virtual("password")
   .set(function (password) {
