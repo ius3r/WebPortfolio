@@ -11,19 +11,42 @@ import projectRoutes from "./routes/project.routes.js";
 import educationRoutes from "./routes/education.routes.js";
 
 const app = express();
+
+// Core middleware first
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/", userRoutes);
-app.use("/", authRoutes);
-app.use("/", contactRoutes);
-app.use("/", projectRoutes);
-app.use("/", educationRoutes);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(compress());
 app.use(helmet());
-app.use(cors());
+
+// CORS BEFORE routes, allow credentials for dev client
+const whitelist = [
+  process.env.CLIENT_ORIGIN,
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5174",
+];
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin) return callback(null, true); // allow server-to-server and tools
+    const allowed = whitelist.filter(Boolean).includes(origin);
+    callback(allowed ? null : new Error("Not allowed by CORS"), allowed);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+app.use(cors(corsOptions));
+
+// Routes after CORS
+app.use("/", userRoutes);
+app.use("/", authRoutes);
+app.use("/", contactRoutes);
+app.use("/", projectRoutes);
+app.use("/", educationRoutes);
 app.use((err, req, res, next) => {
   if (err.name === "UnauthorizedError") {
     res.status(401).json({ error: err.name + ": " + err.message });
