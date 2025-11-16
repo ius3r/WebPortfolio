@@ -7,12 +7,13 @@ const ContactSchema = new mongoose.Schema({
 	email: {
 		type: String,
 		trim: true,
-		unique: 'Email already exists',
 		match: [/.+\@.+\..+/, 'Please fill a valid email address'],
 		required: 'Email is required'
-	}
+	},
+	contactNumber: { type: String, trim: true },
+	message: { type: String, trim: true }
 
-});
+}, { timestamps: true });
 
 export default mongoose.model("Contact", ContactSchema);
 

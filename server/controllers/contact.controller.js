@@ -18,6 +18,8 @@ const create = async (req, res) => {
       firstname: req.body.firstname,
       lastname: req.body.lastname,
       email: req.body.email,
+      contactNumber: req.body.contactNumber,
+      message: req.body.message,
     });
     const saved = await doc.save();
     return res.status(201).json(saved);
@@ -59,6 +61,8 @@ const update = async (req, res) => {
     }
     if (req.body.firstname !== undefined) req.contact.firstname = req.body.firstname;
     if (req.body.lastname !== undefined) req.contact.lastname = req.body.lastname;
+    if (req.body.contactNumber !== undefined) req.contact.contactNumber = req.body.contactNumber;
+    if (req.body.message !== undefined) req.contact.message = req.body.message;
     const saved = await req.contact.save();
     return res.json(saved);
   } catch (err) {

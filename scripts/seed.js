@@ -4,6 +4,8 @@ import config from '../config/config.js';
 import Service from '../server/models/service.model.js';
 import Education from '../server/models/education.model.js';
 import Project from '../server/models/project.model.js';
+import Contact from '../server/models/contact.model.js';
+import PortfolioInfo from '../server/models/portfolioinfo.model.js';
 
 async function run() {
   await mongoose.connect(config.mongoUri);
@@ -18,6 +20,18 @@ async function run() {
       // ignore
     } else {
       console.log('Index drop check:', e?.message || e);
+    }
+  }
+
+  // Drop legacy unique index on Contact.email if present (leads allow duplicates)
+  try {
+    await Contact.collection.dropIndex('email_1');
+    console.log('Dropped legacy unique index: Contact.email');
+  } catch (e) {
+    if (e?.codeName === 'IndexNotFound') {
+      // ignore
+    } else {
+      console.log('Contact index drop check:', e?.message || e);
     }
   }
 
@@ -108,6 +122,27 @@ async function run() {
     console.log('Seeded Projects');
   } else {
     console.log('Projects already exist, skipping');
+  }
+
+  // Seed PortfolioInfo (About + Contact details)
+  const infoCount = await PortfolioInfo.countDocuments();
+  if (infoCount === 0) {
+    await PortfolioInfo.create({
+      name: 'Islam Mubarak',
+      headline: 'Game & Web Developer',
+      bio: 'I’m a self‑taught game developer and a web developer with 4 years of professional experience, holding a B.S. in Computer Science from Helwan University. Worked as a Web Developer for 4 years as a freelancer on Upwork.',
+      email: 'dev.islam.tarek@gmail.com',
+      phone: '+1 (000) 000-0000',
+      location: 'Toronto, Canada',
+      github: 'https://github.com/ius3r',
+      linkedin: 'https://www.linkedin.com/in/ius3r',
+      resumeUrl: '/Resume.pdf',
+      avatarUrl: '/photo.jpeg',
+      skills: ['Game Development','C++','Unreal Engine','Unity3D','Godot','Web Development','Task Automation','Web Scraping','Python','React','Node.js']
+    });
+    console.log('Seeded PortfolioInfo');
+  } else {
+    console.log('PortfolioInfo already exists, skipping');
   }
 
   await mongoose.disconnect();
