@@ -11,12 +11,12 @@ export default function Contact() {
   const [info, setInfo] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [leads, setLeads] = useState([]);
-  const [loadingLeads, setLoadingLeads] = useState(false);
-  const [leadError, setLeadError] = useState('');
-  const [leadModalOpen, setLeadModalOpen] = useState(false);
-  const [leadSaving, setLeadSaving] = useState(false);
-  const [leadForm, setLeadForm] = useState({ _id: null, firstname: '', lastname: '', email: '', contactNumber: '', message: '' });
+  const [entries, setEntries] = useState([]);
+  const [loadingEntries, setLoadingEntries] = useState(false);
+  const [entryError, setEntryError] = useState('');
+  const [entryModalOpen, setEntryModalOpen] = useState(false);
+  const [entrySaving, setEntrySaving] = useState(false);
+  const [entryForm, setEntryForm] = useState({ _id: null, firstname: '', lastname: '', email: '', contactNumber: '', message: '' });
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [infoSaving, setInfoSaving] = useState(false);
   const [infoForm, setInfoForm] = useState({ email: '', phone: '', location: '', github: '', linkedin: '' });
@@ -35,21 +35,21 @@ export default function Contact() {
     })();
   }, []);
 
-  // Admin: load leads
+  // Admin: load contact entries
   useEffect(() => {
     if (!user?.isAdmin) return;
     let cancelled = false;
     (async () => {
-      setLoadingLeads(true);
+      setLoadingEntries(true);
       try {
         const res = await fetch(`${API_BASE}/api/contacts`, { headers: { ...authHeader() }, credentials: 'include' });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error || 'Failed to load contacts');
-        if (!cancelled) setLeads(data);
+        if (!cancelled) setEntries(data);
       } catch (e) {
-        if (!cancelled) setLeadError(e.message || 'Failed to load contacts');
+        if (!cancelled) setEntryError(e.message || 'Failed to load contacts');
       } finally {
-        if (!cancelled) setLoadingLeads(false);
+        if (!cancelled) setLoadingEntries(false);
       }
     })();
     return () => { cancelled = true; };
@@ -126,53 +126,53 @@ export default function Contact() {
     }
   };
 
-  const refreshLeads = async () => {
+  const refreshEntries = async () => {
     if (!user?.isAdmin) return;
-    setLoadingLeads(true);
+    setLoadingEntries(true);
     try {
       const res = await fetch(`${API_BASE}/api/contacts`, { headers: { ...authHeader() }, credentials: 'include' });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Failed to load contacts');
-      setLeads(data);
-      setLeadError('');
+      setEntries(data);
+      setEntryError('');
     } catch (e) {
-      setLeadError(e.message || 'Failed to load contacts');
+      setEntryError(e.message || 'Failed to load contacts');
     } finally {
-      setLoadingLeads(false);
+      setLoadingEntries(false);
     }
   };
 
-  const openEditLead = (lead) => {
-    setLeadForm({ _id: lead._id, firstname: lead.firstname || '', lastname: lead.lastname || '', email: lead.email || '', contactNumber: lead.contactNumber || '', message: lead.message || '' });
-    setLeadModalOpen(true);
+  const openEditEntry = (entry) => {
+    setEntryForm({ _id: entry._id, firstname: entry.firstname || '', lastname: entry.lastname || '', email: entry.email || '', contactNumber: entry.contactNumber || '', message: entry.message || '' });
+    setEntryModalOpen(true);
   };
-  const submitLeadForm = async (e) => {
+  const submitEntryForm = async (e) => {
     e.preventDefault();
-    setLeadSaving(true);
+    setEntrySaving(true);
     try {
-      const url = `${API_BASE}/api/contacts/${leadForm._id}`;
-      const res = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeader() }, credentials: 'include', body: JSON.stringify(leadForm) });
+      const url = `${API_BASE}/api/contacts/${entryForm._id}`;
+      const res = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...authHeader() }, credentials: 'include', body: JSON.stringify(entryForm) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || 'Update failed');
-      setLeadModalOpen(false);
-      refreshLeads();
+      setEntryModalOpen(false);
+      refreshEntries();
     } catch (e) {
       alert(e.message || 'Update failed');
     } finally {
-      setLeadSaving(false);
+      setEntrySaving(false);
     }
   };
-  const deleteLead = async (lead) => {
-    if (!confirm(`Delete lead from ${lead.firstname} ${lead.lastname}?`)) return;
-    const res = await fetch(`${API_BASE}/api/contacts/${lead._id}`, { method: 'DELETE', headers: { ...authHeader() }, credentials: 'include' });
+  const deleteEntry = async (entry) => {
+    if (!confirm(`Delete contact entry from ${entry.firstname} ${entry.lastname}?`)) return;
+    const res = await fetch(`${API_BASE}/api/contacts/${entry._id}`, { method: 'DELETE', headers: { ...authHeader() }, credentials: 'include' });
     if (!res.ok) { const d = await res.json().catch(() => ({})); alert(d?.error || 'Delete failed'); return; }
-    refreshLeads();
+    refreshEntries();
   };
-  const clearAllLeads = async () => {
-    if (!confirm('Delete ALL contacts? This cannot be undone.')) return;
+  const clearAllEntries = async () => {
+    if (!confirm('Delete ALL contact entries? This cannot be undone.')) return;
     const res = await fetch(`${API_BASE}/api/contacts`, { method: 'DELETE', headers: { ...authHeader() }, credentials: 'include' });
     if (!res.ok) { const d = await res.json().catch(() => ({})); alert(d?.error || 'Delete all failed'); return; }
-    refreshLeads();
+    refreshEntries();
   };
 
   return (
@@ -187,19 +187,19 @@ export default function Contact() {
         </div>
       )}
         <h3 style={{ marginTop: 0 }}>Get in touch</h3>
-        <p style={{ margin: '.25rem 0' }}>
-          Email: {info?.email ? (
-            <a className="text-link" href={`mailto:${info.email}`}>{info.email}</a>
-          ) : (
-            <a className="text-link" href="mailto:dev.islam.tarek@gmail.com">dev.islam.tarek@gmail.com</a>
-          )}
-        </p>
+        {info?.email && (
+          <p style={{ margin: '.25rem 0' }}>
+            Email: <a className="text-link" href={`mailto:${info.email}`}>{info.email}</a>
+          </p>
+        )}
         {info?.phone && (
           <p style={{ margin: '.25rem 0' }}>
             Contact Number: <a className="text-link" href={`tel:${(info.phone || '').replaceAll(' ', '')}`}>{info.phone}</a>
           </p>
         )}
-        <p style={{ margin: '.25rem 0' }}>Location: {info?.location || 'Toronto, Canada'}</p>
+        {info?.location && (
+          <p style={{ margin: '.25rem 0' }}>Location: {info.location}</p>
+        )}
         {(info?.github || info?.linkedin) && (
           <p style={{ margin: '.25rem 0' }}>
             Links: {info?.github && (
@@ -252,39 +252,39 @@ export default function Contact() {
 
       {user?.isAdmin && (
         <section style={{ marginTop: '2rem' }}>
-          <h2>Leads</h2>
+          <h2>Contact Entries</h2>
           <div className="card-actions" style={{ justifyContent: 'flex-end' }}>
-            <button className="btn small outline" onClick={refreshLeads} disabled={loadingLeads}>Refresh</button>
-            <button className="btn small" onClick={clearAllLeads} disabled={loadingLeads}>Delete All</button>
+            <button className="btn small outline" onClick={refreshEntries} disabled={loadingEntries}>Refresh</button>
+            <button className="btn small" onClick={clearAllEntries} disabled={loadingEntries}>Delete All</button>
           </div>
-          {leadError && <p style={{ color: '#ff6b6b' }}>{leadError}</p>}
-          {loadingLeads ? <p>Loading leads…</p> : (
+          {entryError && <p style={{ color: '#ff6b6b' }}>{entryError}</p>}
+          {loadingEntries ? <p>Loading contact entries…</p> : (
             <div className="grid cards">
-              {leads.map(ld => (
-                <article className="card" key={ld._id}>
-                  <h3 style={{ marginTop: 0 }}>{ld.firstname} {ld.lastname}</h3>
+              {entries.map(en => (
+                <article className="card" key={en._id}>
+                  <h3 style={{ marginTop: 0 }}>{en.firstname} {en.lastname}</h3>
                   <p style={{ margin: '.25rem 0' }}>
-                    <a className="text-link" href={`mailto:${ld.email}`}>{ld.email}</a>
-                    {ld.contactNumber ? <> · {ld.contactNumber}</> : null}
+                    <a className="text-link" href={`mailto:${en.email}`}>{en.email}</a>
+                    {en.contactNumber ? <> · {en.contactNumber}</> : null}
                   </p>
-                  {ld.message && <p style={{ whiteSpace: 'pre-wrap' }}>{ld.message}</p>}
+                  {en.message && <p style={{ whiteSpace: 'pre-wrap' }}>{en.message}</p>}
                   <div className="card-actions" style={{ justifyContent: 'flex-end' }}>
-                    <button className="btn small outline" onClick={() => openEditLead(ld)}>Edit</button>
-                    <button className="btn small" onClick={() => deleteLead(ld)}>Delete</button>
+                    <button className="btn small outline" onClick={() => openEditEntry(en)}>Edit</button>
+                    <button className="btn small" onClick={() => deleteEntry(en)}>Delete</button>
                   </div>
                 </article>
               ))}
-              {leads.length === 0 && <p style={{ color: 'var(--muted)' }}>No leads yet.</p>}
+              {entries.length === 0 && <p style={{ color: 'var(--muted)' }}>No contact entries yet.</p>}
             </div>
           )}
 
-          <LeadAdminModal
-            open={leadModalOpen}
-            form={leadForm}
-            setForm={setLeadForm}
-            onClose={() => setLeadModalOpen(false)}
-            onSubmit={submitLeadForm}
-            saving={leadSaving}
+          <EntryAdminModal
+            open={entryModalOpen}
+            form={entryForm}
+            setForm={setEntryForm}
+            onClose={() => setEntryModalOpen(false)}
+            onSubmit={submitEntryForm}
+            saving={entrySaving}
           />
         </section>
       )}
@@ -292,30 +292,30 @@ export default function Contact() {
   );
 }
 
-function LeadAdminModal({ open, form, setForm, onClose, onSubmit, saving }) {
+function EntryAdminModal({ open, form, setForm, onClose, onSubmit, saving }) {
   if (!open) return null;
   return (
-    <AdminModal title={`Edit Lead: ${form.firstname} ${form.lastname}`} onClose={onClose} size="narrow">
+    <AdminModal title={`Edit Contact Entry: ${form.firstname} ${form.lastname}`} onClose={onClose} size="narrow">
       <form className="form" onSubmit={onSubmit}>
         <div className="field">
-          <label htmlFor="lead-firstname">First Name</label>
-          <input id="lead-firstname" value={form.firstname} onChange={(e) => setForm({ ...form, firstname: e.target.value })} required />
+          <label htmlFor="entry-firstname">First Name</label>
+          <input id="entry-firstname" value={form.firstname} onChange={(e) => setForm({ ...form, firstname: e.target.value })} required />
         </div>
         <div className="field">
-          <label htmlFor="lead-lastname">Last Name</label>
-          <input id="lead-lastname" value={form.lastname} onChange={(e) => setForm({ ...form, lastname: e.target.value })} required />
+          <label htmlFor="entry-lastname">Last Name</label>
+          <input id="entry-lastname" value={form.lastname} onChange={(e) => setForm({ ...form, lastname: e.target.value })} required />
         </div>
         <div className="field">
-          <label htmlFor="lead-email">Email</label>
-          <input id="lead-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+          <label htmlFor="entry-email">Email</label>
+          <input id="entry-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
         </div>
         <div className="field">
-          <label htmlFor="lead-number">Contact Number</label>
-          <input id="lead-number" value={form.contactNumber} onChange={(e) => setForm({ ...form, contactNumber: e.target.value })} />
+          <label htmlFor="entry-number">Contact Number</label>
+          <input id="entry-number" value={form.contactNumber} onChange={(e) => setForm({ ...form, contactNumber: e.target.value })} />
         </div>
         <div className="field">
-          <label htmlFor="lead-message">Message</label>
-          <textarea id="lead-message" rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
+          <label htmlFor="entry-message">Message</label>
+          <textarea id="entry-message" rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
         </div>
         <div className="card-actions" style={{ justifyContent: 'flex-end' }}>
           <button type="button" className="btn outline" onClick={onClose}>Cancel</button>

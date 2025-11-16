@@ -21,13 +21,11 @@ export default function About() {
     })();
   }, []);
 
-  const avatar = info?.avatarUrl || '/photo.jpeg';
-  const name = info?.name || 'Islam Mubarak';
-  const bio = info?.bio || 'I’m a self‑taught game developer and a web developer with 4 years of professional experience, holding a B.S. in Computer Science from Helwan University.';
-  const resumeUrl = info?.resumeUrl || '/Resume.pdf';
-  const skills = Array.isArray(info?.skills) && info.skills.length ? info.skills : [
-    'Game Development','C++','Unreal Engine','Unity3D','Godot','Web Development','Task Automation','Web Scraping','Python','React','Node.js'
-  ];
+  const avatar = info?.avatarUrl || null;
+  const name = info?.name || '';
+  const bio = info?.bio || '';
+  const resumeUrl = info?.resumeUrl || '';
+  const skills = Array.isArray(info?.skills) && info.skills.length ? info.skills : [];
 
   return (
     <section className="centered section-narrow" style={{ position: 'relative' }}>
@@ -47,17 +45,19 @@ export default function About() {
           }}>Edit About</button>
         </div>
       )}
-      <img className="about-avatar" src={avatar} alt={`${name} portrait`} />
-      <h1 style={{ marginTop: '0' }}>{name}</h1>
+      {avatar && <img className="about-avatar" src={avatar} alt={`${name} portrait`} />}
+      {name && <h1 style={{ marginTop: '0' }}>{name}</h1>}
       {info?.headline && <p style={{ color: 'var(--muted)', marginTop: '-.5rem' }}>{info.headline}</p>}
-      <p>{bio}</p>
+      {bio && <p>{bio}</p>}
       <div className="hero-cta" style={{ justifyContent: 'center', marginBottom: '0.5rem' }}>
-        <a className="btn" href={resumeUrl} target="_blank" rel="noopener noreferrer">Open Resume</a>
+        {resumeUrl && <a className="btn" href={resumeUrl} target="_blank" rel="noopener noreferrer">Open Resume</a>}
       </div>
       <h2>Skills</h2>
-      <ul className="pill-list">
-        {skills.map((s, i) => <li key={i}>{s}</li>)}
-      </ul>
+      {skills.length > 0 && (
+        <ul className="pill-list">
+          {skills.map((s, i) => <li key={i}>{s}</li>)}
+        </ul>
+      )}
 
       {user?.isAdmin && (
         <AboutAdminModal
@@ -107,7 +107,7 @@ function AboutAdminModal({ open, form, setForm, onClose, onSubmit, saving }) {
       <form className="form" onSubmit={onSubmit}>
         <div className="field">
           <label htmlFor="about-name">Name</label>
-          <input id="about-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <input id="about-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
         </div>
         <div className="field">
           <label htmlFor="about-headline">Headline</label>
@@ -115,7 +115,7 @@ function AboutAdminModal({ open, form, setForm, onClose, onSubmit, saving }) {
         </div>
         <div className="field">
           <label htmlFor="about-bio">Bio</label>
-          <textarea id="about-bio" rows={5} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} />
+          <textarea id="about-bio" rows={5} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} required />
         </div>
         <div className="field">
           <label htmlFor="about-avatar">Avatar URL</label>
