@@ -26,6 +26,7 @@ export default function NavBar() {
           <li><NavLink to="/about" className={linkClass}>About Me</NavLink></li>
           <li><NavLink to="/projects" className={linkClass}>Projects</NavLink></li>
           <li><NavLink to="/services" className={linkClass}>Services</NavLink></li>
+          <li><NavLink to="/qualifications" className={linkClass}>Qualifications</NavLink></li>
           <li><NavLink to="/contact" className={linkClass}>Contact Me</NavLink></li>
         </ul>
       </nav>
@@ -37,7 +38,7 @@ export default function NavBar() {
           </>
         ) : (
           <>
-            <span className="auth-name">{user.name}</span>
+            <span className="auth-name">{user.name}{user.isAdmin ? ' · Admin' : ''}</span>
             <button className="btn small outline" onClick={signout}>Sign Out</button>
           </>
         )}

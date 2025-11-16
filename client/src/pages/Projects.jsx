@@ -1,49 +1,88 @@
 import { useState, useEffect, useRef } from 'react';
 import './Projects.css';
+import { API_BASE, authHeader } from '../services/auth.js';
+import { useAuth } from '../context/AuthContext.jsx';
+import AdminModal from '../components/AdminModal.jsx';
 
 export default function Projects() {
-  const projects = [
-    {
-      title: 'Imitation Game',
-      summary: 'A multiplayer social deduction game, was developed using Godot engine, and NodeJS for the server side.',
-      details:
-        'This project tackles problem X with a focus on performance and accessibility. Built using React, Vite, and CSS Modules. Key features include responsive layouts, client-side routing, and a11y-first components.',
-      images: [
-        '/projects/imitation1.png',
-        '/projects/imitation2.png',
-        '/projects/imitation3.png',
-        '/projects/imitation4.png',
-        '/projects/imitation5.png',
-        '/projects/imitation6.png',
-        '/projects/imitation7.png',
-        '/projects/imitation8.png',
-      ],
-    },
-    {
-      title: 'Starvival',
-      summary: 'A multiplayer survival game that takes place on alien worlds developed using Unity3D, networking was done using Mirror API.',
-      details:
-        'Implemented complex state management and data fetching with caching. Optimized bundle size and implemented code-splitting. Addressed real-time updates and optimistic UI for better UX.',
-      images: [
-        '/projects/starvival1.jpg',
-        '/projects/starvival2.jpg',
-        '/projects/starvival3.jpg',
-        '/projects/starvival4.jpg',
-        '/projects/starvival5.jpg',
-        '/projects/starvival6.png',
-        '/projects/starvival7.png'
-      ],
-    },
-    {
-      title: 'Custom Netcode',
-      summary: 'An attempt at creating a custom netcode with MMO capabilities in Unreal Engine.',
-      details:
-        'An attempt at creating a custom netcode with MMO capabilities in Unreal Engine using ENET.',
-      images: [
-        '/projects/netcode1.png'
-      ],
-    },
-  ];
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const { user } = useAuth();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ _id: null, title: '', summary: '', details: '', images: [] });
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/projects`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || 'Failed to load projects');
+        if (!cancelled) setProjects(Array.isArray(data) ? data : []);
+      } catch (e) {
+        if (!cancelled) setError(e.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const refresh = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/projects`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to load projects');
+      setProjects(Array.isArray(data) ? data : []);
+      setError('');
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openAdd = () => {
+    setForm({ _id: null, title: '', summary: '', details: '', images: [] });
+    setModalOpen(true);
+  };
+  const openEdit = (p) => {
+    setForm({ _id: p._id, title: p.title || '', summary: p.summary || '', details: p.details || '', images: p.images || [] });
+    setModalOpen(true);
+  };
+  const submitForm = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = { ...form, images: form.images };
+      const url = form._id ? `${API_BASE}/api/projects/${form._id}` : `${API_BASE}/api/projects`;
+      const method = form._id ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || (form._id ? 'Update failed' : 'Create failed'));
+      setModalOpen(false);
+      refresh();
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteProject = async (p) => {
+    if (!confirm(`Delete project "${p.title}"?`)) return;
+    const res = await fetch(`${API_BASE}/api/projects/${p._id}`, { method: 'DELETE', headers: { ...authHeader() }, credentials: 'include' });
+    if (!res.ok) { const d = await res.json(); alert(d?.error || 'Delete failed'); return; }
+    refresh();
+  };
 
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(null);
@@ -93,6 +132,13 @@ export default function Projects() {
   return (
     <section>
       <h1>Projects</h1>
+      {user?.isAdmin && (
+        <div className="card-actions" style={{ justifyContent: 'flex-end' }}>
+          <button className="btn small" onClick={openAdd}>Add Project</button>
+        </div>
+      )}
+      {loading && <p>Loading projects…</p>}
+      {error && <p style={{ color: '#ff6b6b' }}>{error}</p>}
       <div className="grid cards">
         {projects.map((p) => (
           <article className="card project-card" key={p.title}>
@@ -114,10 +160,16 @@ export default function Projects() {
 
             <div className="project-card__body">
               <h3 style={{ margin: '0 0 .25rem' }}>{p.title}</h3>
-              <p style={{ margin: 0 }}>{p.summary}</p>
+              <p style={{ margin: 0 }}>{p.summary || p.description}</p>
 
               <div className="card-actions project-card__actions">
                 <button className="btn outline small" onClick={() => openModal(p)}>Details</button>
+                {user?.isAdmin && (
+                  <>
+                    <button className="btn outline small" onClick={() => openEdit(p)}>Edit</button>
+                    <button className="btn small" onClick={() => deleteProject(p)}>Delete</button>
+                  </>
+                )}
               </div>
             </div>
           </article>
@@ -138,7 +190,7 @@ export default function Projects() {
               <button className="icon-btn" aria-label="Close" onClick={closeModal}>×</button>
             </div>
             <div className="modal-body">
-              <p>{active.details}</p>
+              <p>{active.details || active.description}</p>
 
               {active.images?.length > 0 && (
                 <>
@@ -182,6 +234,47 @@ export default function Projects() {
           </div>
         </div>
       )}
+
+      {user?.isAdmin && (
+        <ProjectsAdminModal
+          open={modalOpen}
+          form={form}
+          setForm={setForm}
+          onClose={() => setModalOpen(false)}
+          onSubmit={submitForm}
+          saving={saving}
+        />
+      )}
     </section>
+  );
+}
+// Modal rendering at bottom to avoid nesting issues
+export function ProjectsAdminModal({ open, form, setForm, onClose, onSubmit, saving }) {
+  if (!open) return null;
+  return (
+    <AdminModal title={form._id ? 'Edit Project' : 'Add Project'} onClose={onClose}>
+      <form className="form" onSubmit={onSubmit}>
+        <div className="field">
+          <label htmlFor="prj-title">Title</label>
+          <input id="prj-title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+        </div>
+        <div className="field">
+          <label htmlFor="prj-summary">Summary</label>
+          <textarea id="prj-summary" rows={2} value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} />
+        </div>
+        <div className="field">
+          <label htmlFor="prj-details">Details</label>
+          <textarea id="prj-details" rows={5} value={form.details} onChange={(e) => setForm({ ...form, details: e.target.value })} />
+        </div>
+        <div className="field">
+          <label htmlFor="prj-images">Image URLs (comma separated)</label>
+          <input id="prj-images" value={(form.images || []).join(', ')} onChange={(e) => setForm({ ...form, images: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} />
+        </div>
+        <div className="card-actions" style={{ justifyContent: 'flex-end' }}>
+          <button type="button" className="btn outline" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
+        </div>
+      </form>
+    </AdminModal>
   );
 }

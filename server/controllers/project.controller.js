@@ -1,9 +1,9 @@
 import Project from "../models/project.model.js";
+import errorHandler from "./error.controller.js";
 
-// Simple validators
+// Minimal validator: only title required now
 const requireFields = (data) => {
   if (!data.title || typeof data.title !== "string") return "Title is required";
-  if (!data.email || typeof data.email !== "string" || !/.+@.+\..+/.test(data.email)) return "A valid email is required";
   return null;
 };
 
@@ -15,14 +15,16 @@ const create = async (req, res) => {
       title: req.body.title,
       firstname: req.body.firstname,
       lastname: req.body.lastname,
-      email: req.body.email,
+      email: req.body.email, // optional
       completion: req.body.completion,
       description: req.body.description,
+      summary: req.body.summary,
+      details: req.body.details,
+      images: Array.isArray(req.body.images) ? req.body.images : [],
     });
     const saved = await doc.save();
     return res.status(201).json(saved);
   } catch (err) {
-    // Duplicate key error (formatted via helper)
     if (err && (err.code === 11000 || err.code === 11001)) {
       return res.status(409).json({ error: errorHandler.getErrorMessage(err) });
     }
@@ -58,11 +60,14 @@ const update = async (req, res) => {
     if (req.body.firstname !== undefined) req.project.firstname = req.body.firstname;
     if (req.body.lastname !== undefined) req.project.lastname = req.body.lastname;
     if (req.body.email !== undefined) {
-      if (!/.+@.+\..+/.test(req.body.email)) return res.status(400).json({ error: "A valid email is required" });
+      if (req.body.email && !/.+@.+\..+/.test(req.body.email)) return res.status(400).json({ error: "A valid email is required" });
       req.project.email = req.body.email;
     }
     if (req.body.completion !== undefined) req.project.completion = req.body.completion;
     if (req.body.description !== undefined) req.project.description = req.body.description;
+    if (req.body.summary !== undefined) req.project.summary = req.body.summary;
+    if (req.body.details !== undefined) req.project.details = req.body.details;
+    if (req.body.images !== undefined && Array.isArray(req.body.images)) req.project.images = req.body.images;
     const saved = await req.project.save();
     return res.json(saved);
   } catch (err) {

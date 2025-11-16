@@ -1,5 +1,6 @@
 import express from "express";
 import educationCtrl from "../controllers/education.controller.js";
+import authCtrl from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
@@ -7,15 +8,15 @@ const router = express.Router();
 router
   .route("/api/qualifications")
   .get(educationCtrl.list)
-  .post(educationCtrl.create)
-  .delete(educationCtrl.removeAll);
+  .post(authCtrl.requireSignin, authCtrl.isAdmin, educationCtrl.create)
+  .delete(authCtrl.requireSignin, authCtrl.isAdmin, educationCtrl.removeAll);
 
 // Single qualification routes
 router
   .route("/api/qualifications/:educationId")
   .get(educationCtrl.read)
-  .put(educationCtrl.update)
-  .delete(educationCtrl.remove);
+  .put(authCtrl.requireSignin, authCtrl.isAdmin, educationCtrl.update)
+  .delete(authCtrl.requireSignin, authCtrl.isAdmin, educationCtrl.remove);
 
 router.param("educationId", educationCtrl.educationByID);
 

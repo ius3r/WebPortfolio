@@ -158,3 +158,69 @@
   outline-offset: 2px;
   border-radius: 2px;
 }
+
+/* Admin Modal: cleaner, aligned with site aesthetics */
+.admin-modal {
+  width: min(600px, 96%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)) , var(--panel);
+  animation: adminModalIn 160ms ease-out;
+}
+
+.modal--narrow.admin-modal { width: min(560px, 96%); }
+.modal--wide.admin-modal { width: min(860px, 96%); }
+
+.admin-modal__header{
+  padding: .85rem 1rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+}
+.admin-modal__header h3{
+  font-size: 1.05rem;
+  letter-spacing: .2px;
+  margin: 0;
+}
+.admin-modal__body{ padding: 1rem; }
+
+.admin-modal .icon-btn{
+  border-color: transparent;
+  color: var(--muted);
+}
+.admin-modal .icon-btn:hover{
+  background: rgba(255,255,255,.03);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+/* Form polish inside admin modal */
+.admin-modal .form{ display: grid; gap: .8rem; }
+.admin-modal .form .field label{
+  font-weight: 600; color: var(--muted); margin-bottom: .25rem;
+}
+.admin-modal .form input,
+.admin-modal .form textarea,
+.admin-modal .form select{
+  width: 100%;
+  background: #12141b;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: .6rem;
+  padding: .6rem .7rem;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.admin-modal .form input:focus,
+.admin-modal .form textarea:focus,
+.admin-modal .form select:focus{
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 22%, transparent);
+}
+.admin-modal .form .field-hint{
+  font-size: .78rem; color: var(--muted); margin-top: .25rem;
+}
+.admin-modal .modal-actions,
+.admin-modal .card-actions{ justify-content: flex-end; gap: .5rem; }
+.admin-modal .btn{ height: 36px; padding: 0 14px; border-radius: .55rem; }
+
+@keyframes adminModalIn{
+  from{ transform: translateY(4px) scale(.985); opacity: 0; }
+  to{ transform: translateY(0) scale(1); opacity: 1; }
+}
