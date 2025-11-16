@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { API_BASE, authHeader } from '../services/auth.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import AdminModal from '../components/AdminModal.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import './About.css';
 
 export default function About() {
   const { user } = useAuth();
+  const { addToast } = useToast();
   const [info, setInfo] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -87,8 +89,9 @@ export default function About() {
               if (!res.ok) throw new Error(data?.error || 'Update failed');
               setInfo(data);
               setModalOpen(false);
+              addToast({ type: 'success', message: 'About info updated.' });
             } catch (err) {
-              alert(err.message || 'Update failed');
+              addToast({ type: 'error', message: err.message || 'Update failed' });
             } finally {
               setSaving(false);
             }

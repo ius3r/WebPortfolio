@@ -3,6 +3,7 @@ import './Projects.css';
 import { API_BASE, authHeader } from '../services/auth.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import AdminModal from '../components/AdminModal.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 export default function Projects() {
   const [projects, setProjects] = useState([]);
@@ -12,6 +13,7 @@ export default function Projects() {
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ _id: null, title: '', summary: '', details: '', images: [] });
+  const { addToast } = useToast();
 
   useEffect(() => {
     let cancelled = false;
@@ -69,9 +71,10 @@ export default function Projects() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || (form._id ? 'Update failed' : 'Create failed'));
       setModalOpen(false);
+      addToast({ type: 'success', message: form._id ? 'Project updated.' : 'Project created.' });
       refresh();
     } catch (e) {
-      alert(e.message);
+      addToast({ type: 'error', message: e.message || 'Save failed' });
     } finally {
       setSaving(false);
     }
@@ -80,7 +83,8 @@ export default function Projects() {
   const deleteProject = async (p) => {
     if (!confirm(`Delete project "${p.title}"?`)) return;
     const res = await fetch(`${API_BASE}/api/projects/${p._id}`, { method: 'DELETE', headers: { ...authHeader() }, credentials: 'include' });
-    if (!res.ok) { const d = await res.json(); alert(d?.error || 'Delete failed'); return; }
+    if (!res.ok) { const d = await res.json(); addToast({ type: 'error', message: d?.error || 'Delete failed' }); return; }
+    addToast({ type: 'success', message: 'Project deleted.' });
     refresh();
   };
 
@@ -133,7 +137,7 @@ export default function Projects() {
     <section>
       <h1>Projects</h1>
       {user?.isAdmin && (
-        <div className="card-actions" style={{ justifyContent: 'flex-end' }}>
+        <div className="card-actions" style={{ justifyContent: 'flex-end', marginBottom: '.5rem' }}>
           <button className="btn small" onClick={openAdd}>Add Project</button>
         </div>
       )}

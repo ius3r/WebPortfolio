@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { API_BASE, authHeader } from '../services/auth.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import AdminModal from '../components/AdminModal.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 export default function Qualifications() {
   const [items, setItems] = useState([]);
@@ -11,6 +12,7 @@ export default function Qualifications() {
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ _id: null, title: '', firstname: '', lastname: '', email: '', completion: '', description: '' });
+  const { addToast } = useToast();
 
   useEffect(() => {
     let cancelled = false;
@@ -68,9 +70,10 @@ export default function Qualifications() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || (form._id ? 'Update failed' : 'Create failed'));
       setModalOpen(false);
+      addToast({ type: 'success', message: form._id ? 'Qualification updated.' : 'Qualification created.' });
       refresh();
     } catch (e) {
-      alert(e.message);
+      addToast({ type: 'error', message: e.message || 'Save failed' });
     } finally {
       setSaving(false);
     }
@@ -79,7 +82,8 @@ export default function Qualifications() {
   const deleteItem = async (q) => {
     if (!confirm(`Delete qualification "${q.title}"?`)) return;
     const res = await fetch(`${API_BASE}/api/qualifications/${q._id}`, { method: 'DELETE', headers: { ...authHeader() }, credentials: 'include' });
-    if (!res.ok) { const d = await res.json(); alert(d?.error || 'Delete failed'); return; }
+    if (!res.ok) { const d = await res.json(); addToast({ type: 'error', message: d?.error || 'Delete failed' }); return; }
+    addToast({ type: 'success', message: 'Qualification deleted.' });
     refresh();
   };
 
@@ -87,7 +91,7 @@ export default function Qualifications() {
     <section>
       <h1>Qualifications</h1>
       {user?.isAdmin && (
-        <div className="card-actions" style={{ justifyContent: 'flex-end' }}>
+        <div className="card-actions" style={{ justifyContent: 'flex-end', marginBottom: '.5rem' }}>
           <button className="btn small" onClick={openAdd}>Add Qualification</button>
         </div>
       )}

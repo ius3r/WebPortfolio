@@ -3,14 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { API_BASE, authHeader } from '../services/auth.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import AdminModal from '../components/AdminModal.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import './Contact.css';
 
 export default function Contact() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addToast } = useToast();
   const [info, setInfo] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [form, setForm] = useState({ firstName: '', lastName: '', contactNumber: '', email: '', message: '' });
   const [entries, setEntries] = useState([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
   const [entryError, setEntryError] = useState('');
@@ -59,14 +62,12 @@ export default function Contact() {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
-    const form = e.currentTarget;
-    const raw = Object.fromEntries(new FormData(form).entries());
     const data = {
-      firstname: raw.firstName,
-      lastname: raw.lastName,
-      email: raw.email,
-      contactNumber: raw.contactNumber,
-      message: raw.message,
+      firstname: form.firstName,
+      lastname: form.lastName,
+      email: form.email,
+      contactNumber: form.contactNumber,
+      message: form.message,
     };
     try {
       const res = await fetch(`${API_BASE}/api/contacts`, {
@@ -76,10 +77,12 @@ export default function Contact() {
       });
       const out = await res.json();
       if (!res.ok) throw new Error(out?.error || 'Failed to send');
-      form.reset();
+      setForm({ firstName: '', lastName: '', contactNumber: '', email: '', message: '' });
+      addToast({ type: 'success', message: 'Message sent successfully.' });
       navigate('/', { replace: true });
     } catch (err) {
       setError(err.message || 'Failed to send');
+      addToast({ type: 'error', message: err.message || 'Failed to send' });
     } finally {
       setSubmitting(false);
     }
@@ -119,8 +122,9 @@ export default function Contact() {
       if (!res.ok) throw new Error(data?.error || 'Update failed');
       setInfo(data);
       setInfoModalOpen(false);
+      addToast({ type: 'success', message: 'Contact info updated.' });
     } catch (e) {
-      alert(e.message || 'Update failed');
+      addToast({ type: 'error', message: e.message || 'Update failed' });
     } finally {
       setInfoSaving(false);
     }
@@ -155,9 +159,10 @@ export default function Contact() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || 'Update failed');
       setEntryModalOpen(false);
+      addToast({ type: 'success', message: 'Contact entry updated.' });
       refreshEntries();
     } catch (e) {
-      alert(e.message || 'Update failed');
+      addToast({ type: 'error', message: e.message || 'Update failed' });
     } finally {
       setEntrySaving(false);
     }
@@ -165,13 +170,15 @@ export default function Contact() {
   const deleteEntry = async (entry) => {
     if (!confirm(`Delete contact entry from ${entry.firstname} ${entry.lastname}?`)) return;
     const res = await fetch(`${API_BASE}/api/contacts/${entry._id}`, { method: 'DELETE', headers: { ...authHeader() }, credentials: 'include' });
-    if (!res.ok) { const d = await res.json().catch(() => ({})); alert(d?.error || 'Delete failed'); return; }
+    if (!res.ok) { const d = await res.json().catch(() => ({})); addToast({ type: 'error', message: d?.error || 'Delete failed' }); return; }
+    addToast({ type: 'success', message: 'Contact entry deleted.' });
     refreshEntries();
   };
   const clearAllEntries = async () => {
     if (!confirm('Delete ALL contact entries? This cannot be undone.')) return;
     const res = await fetch(`${API_BASE}/api/contacts`, { method: 'DELETE', headers: { ...authHeader() }, credentials: 'include' });
-    if (!res.ok) { const d = await res.json().catch(() => ({})); alert(d?.error || 'Delete all failed'); return; }
+    if (!res.ok) { const d = await res.json().catch(() => ({})); addToast({ type: 'error', message: d?.error || 'Delete all failed' }); return; }
+    addToast({ type: 'success', message: 'All contact entries deleted.' });
     refreshEntries();
   };
 
@@ -228,23 +235,23 @@ export default function Contact() {
       <form className="form" onSubmit={onSubmit}>
         <div className="field">
           <label htmlFor="firstName">First Name</label>
-          <input id="firstName" name="firstName" type="text" autoComplete="given-name" required />
+          <input id="firstName" name="firstName" type="text" autoComplete="given-name" required value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
         </div>
         <div className="field">
           <label htmlFor="lastName">Last Name</label>
-          <input id="lastName" name="lastName" type="text" autoComplete="family-name" required />
+          <input id="lastName" name="lastName" type="text" autoComplete="family-name" required value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
         </div>
         <div className="field">
           <label htmlFor="contactNumber">Contact Number</label>
-          <input id="contactNumber" name="contactNumber" type="tel" autoComplete="tel" />
+          <input id="contactNumber" name="contactNumber" type="tel" autoComplete="tel" value={form.contactNumber} onChange={(e) => setForm({ ...form, contactNumber: e.target.value })} />
         </div>
         <div className="field">
           <label htmlFor="email">Email Address</label>
-          <input id="email" name="email" type="email" autoComplete="email" required />
+          <input id="email" name="email" type="email" autoComplete="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
         </div>
         <div className="field">
           <label htmlFor="message">Message</label>
-          <textarea id="message" name="message" rows="5" required />
+          <textarea id="message" name="message" rows="5" required value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
         </div>
         {error && <p style={{ color: '#ff8080', margin: '.5rem 0' }}>{error}</p>}
         <button className="btn" type="submit" disabled={submitting}>{submitting ? 'Sending…' : 'Send'}</button>

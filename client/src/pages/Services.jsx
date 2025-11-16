@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { API_BASE, authHeader } from '../services/auth.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import AdminModal from '../components/AdminModal.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 const icons = {
   gamepad: (<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 8h12a4 4 0 0 1 3.87 5.02l-1 3.5A3.5 3.5 0 0 1 17.5 20a3.5 3.5 0 0 1-3.35-2.4l-.26-.8h-4.8l-.26.8A3.5 3.5 0 0 1 5.5 20a3.5 3.5 0 0 1-3.37-3.48l-1-3.5A4 4 0 0 1 6 8Zm2.25 2.75h-1.5v1.5h-1.5v1.5h1.5v1.5h1.5v-1.5h1.5v-1.5h-1.5v-1.5Zm8.5 1a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Zm-2.5-1.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z"/></svg>),
@@ -18,6 +19,7 @@ export default function Services() {
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ _id: null, title: '', description: '', checklist: [], icon: 'compass', color: 'blue' });
+  const { addToast } = useToast();
 
   useEffect(() => {
     let cancelled = false;
@@ -76,9 +78,10 @@ export default function Services() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || (form._id ? 'Update failed' : 'Create failed'));
       setModalOpen(false);
+      addToast({ type: 'success', message: form._id ? 'Service updated.' : 'Service created.' });
       refresh();
     } catch (e) {
-      alert(e.message);
+      addToast({ type: 'error', message: e.message || 'Save failed' });
     } finally {
       setSaving(false);
     }
@@ -91,7 +94,8 @@ export default function Services() {
       headers: { ...authHeader() },
       credentials: 'include',
     });
-    if (!res.ok) { const d = await res.json(); alert(d?.error || 'Delete failed'); return; }
+    if (!res.ok) { const d = await res.json(); addToast({ type: 'error', message: d?.error || 'Delete failed' }); return; }
+    addToast({ type: 'success', message: 'Service deleted.' });
     refresh();
   };
 
@@ -99,7 +103,7 @@ export default function Services() {
     <section>
       <h1>Services</h1>
       {user?.isAdmin && (
-        <div className="card-actions" style={{ justifyContent: 'flex-end' }}>
+        <div className="card-actions" style={{ justifyContent: 'flex-end', marginBottom: '.5rem' }}>
           <button className="btn small" onClick={openAdd}>Add Service</button>
         </div>
       )}
