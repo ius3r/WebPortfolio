@@ -43,7 +43,12 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Routes after CORS
+// Root route
+app.get("/", (req, res) => {
+  res.json({ message: "Welcome to My Portfolio application." });
+});
+
+// API Routes after CORS
 app.use("/", userRoutes);
 app.use("/", authRoutes);
 app.use("/", contactRoutes);
@@ -51,6 +56,8 @@ app.use("/", projectRoutes);
 app.use("/", educationRoutes);
 app.use("/", serviceRoutes);
 app.use("/", portfolioInfoRoutes);
+
+// Error handling middleware
 app.use((err, req, res, next) => {
   if (err.name === "UnauthorizedError") {
     res.status(401).json({ error: err.name + ": " + err.message });
