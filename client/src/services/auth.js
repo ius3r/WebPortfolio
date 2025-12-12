@@ -33,6 +33,8 @@ export async function signup({ name, email, password }) {
 export async function signout() {
   try {
     await fetch(`${API_BASE}/auth/signout`, { method: 'GET', credentials: 'include' });
+  } catch {
+    // Best-effort signout: still clear local auth even if request fails
   } finally {
     localStorage.removeItem('auth');
   }

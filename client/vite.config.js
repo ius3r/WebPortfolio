@@ -26,5 +26,13 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test/setup.js'],
+    include: ['src/__tests__/**/*.test.{js,jsx,ts,tsx}'],
+    clearMocks: true,
+    restoreMocks: true,
   }
 })
