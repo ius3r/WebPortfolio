@@ -23,11 +23,11 @@ export default function NavBar() {
       <nav className={`site-nav ${open ? 'open' : ''}`} aria-label="Primary">
         <ul onClick={close}>
           <li><NavLink to="/" className={linkClass} end>Home</NavLink></li>
-          <li><NavLink to="/about" className={linkClass}>About Me</NavLink></li>
+          <li><NavLink to="/about" className={linkClass}>About</NavLink></li>
           <li><NavLink to="/projects" className={linkClass}>Projects</NavLink></li>
           <li><NavLink to="/services" className={linkClass}>Services</NavLink></li>
           <li><NavLink to="/qualifications" className={linkClass}>Qualifications</NavLink></li>
-          <li><NavLink to="/contact" className={linkClass}>Contact Me</NavLink></li>
+          <li><NavLink to="/contact" className={linkClass}>Contact</NavLink></li>
         </ul>
       </nav>
       <div className="auth-actions">
