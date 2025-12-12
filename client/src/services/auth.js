@@ -1,9 +1,8 @@
 const API_BASE = (() => {
-  const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
   const fromEnv = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL;
   if (fromEnv) return fromEnv.replace(/\/$/, '');
-  const port = 3000; // server default from config
-  return `http://${host}:${port}`;
+  // Default to same-origin. In dev, Vite proxies /api and /auth.
+  return '';
 })();
 
 export async function signin({ email, password }) {
